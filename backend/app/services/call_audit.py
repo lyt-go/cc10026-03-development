@@ -27,14 +27,20 @@ class CallAuditService(BaseModuleService):
 
     def record_api_call(self, caller: str, api_name: str, params: str = "",
                         response_code: str = "200", latency_ms: float = 0.0,
-                        result_rows: int = 0) -> dict[str, Any]:
-        """记录一次API调用到审计日志。"""
+                        result_rows: int = 0,
+                        timestamp: str | None = None) -> dict[str, Any]:
+        """记录一次API调用到审计日志。
+
+        timestamp 可选：复核场景需要按既有日志时间重建失败/重试链时，
+        由调用方显式给出；缺省取当前时间。
+        """
         from app.services.data_manager import write_audit
         from app.store import store as s
 
         audit_rows = s.rows(self.MODULE)
         new_id = max((int(r.get("id", 0)) for r in audit_rows), default=0) + 1
         record_no = f"CALL-{new_id:04d}"
+        occurred_at = timestamp or self._now_iso()
 
         audit_data = {
             "audit_id": new_id,
@@ -45,7 +51,7 @@ class CallAuditService(BaseModuleService):
             "response_code": response_code,
             "latency_ms": latency_ms,
             "result_rows": result_rows,
-            "timestamp": self._now_iso(),
+            "timestamp": occurred_at,
         }
         write_audit(new_id, audit_data)
 
@@ -59,7 +65,7 @@ class CallAuditService(BaseModuleService):
             "响应码": response_code,
             "响应耗时": str(latency_ms),
             "返回行数": str(result_rows),
-            "时间戳": self._now_iso(),
+            "时间戳": occurred_at,
             "status": "已记录",
             "pending": True,
             "abnormal": response_code != "200",

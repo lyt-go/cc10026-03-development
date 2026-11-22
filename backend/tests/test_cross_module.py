@@ -17,9 +17,11 @@ import tempfile
 # 设置测试环境
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-# 设置临时DATA_ROOT
-temp_data = tempfile.mkdtemp(prefix='cc10026_test_')
-os.environ['DATA_ROOT'] = temp_data
+# 复用 conftest.py 统一分配的 DATA_ROOT，避免多测试文件各自设置环境变量
+# 导致 data_manager 在首次导入时捕获到不一致的共享数据目录。
+temp_data = os.environ.setdefault(
+    "DATA_ROOT", tempfile.mkdtemp(prefix='cc10026_test_')
+)
 
 
 class TestCrossModuleFlows:

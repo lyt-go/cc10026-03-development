@@ -20,7 +20,9 @@ from app.services.call_audit import CallAuditService
 from app.services.version_compat import VersionCompatService
 from app.services.batch_query import BatchQueryService
 from app.services.sdk_config import SdkConfigService
+from app.services.reconciliation import ReconciliationService
 
+# 通用资源模块（18 个标准业务模块，走统一 CRUD/动作路由）
 SERVICES: dict[str, BaseModuleService] = {
     "api_registry": ApiRegistryService(),
     "query_route": QueryRouteService(),
@@ -41,6 +43,10 @@ SERVICES: dict[str, BaseModuleService] = {
     "batch_query": BatchQueryService(),
     "sdk_config": SdkConfigService(),
 }
+
+# 账单差额复核是跨 usage_billing × call_audit 的专用领域服务，
+# 不走统一资源 CRUD，由独立 reconciliation 路由分派。
+RECONCILIATION_SERVICE = ReconciliationService()
 
 
 def service_for(module: str) -> BaseModuleService | None:

@@ -29,3 +29,15 @@ class EntryPayload(BaseModel):
 class ActionPayload(BaseModel):
     action: str
     remark: str | None = None
+
+
+class ReconcileBuildPayload(BaseModel):
+    billing_cycle: str
+    caller: str | None = None
+    api_name: str | None = None
+    unit_amount: float = 0.0
+
+
+class ReconcileConfirmPayload(BaseModel):
+    reviewer: str = "复核人员"
+    remark: str | None = None
